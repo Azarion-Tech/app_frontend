@@ -55,7 +55,7 @@ export default function DashboardPage() {
     )
   }
 
-  const { products, orders, recent_orders } = stats
+  const { products, orders, marketplaces, recent_activity, user_info } = stats
 
   return (
     <DashboardLayout>
@@ -63,7 +63,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Visão geral do seu negócio
+            Bem-vindo, {user_info.name}!
           </p>
         </div>
 
@@ -88,9 +88,9 @@ export default function DashboardPage() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatNumber(products.total_stock)}</div>
+              <div className="text-2xl font-bold">{formatNumber(products.total_stock_units)}</div>
               <p className="text-xs text-muted-foreground">
-                Valor: {formatCurrency(products.total_value)}
+                Valor: {formatCurrency(products.total_stock_value)}
               </p>
             </CardContent>
           </Card>
@@ -131,20 +131,19 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {recent_orders.length === 0 ? (
+            {recent_activity.recent_orders.length === 0 ? (
               <p className="text-gray-500 text-center py-4">
                 Nenhum pedido encontrado
               </p>
             ) : (
               <div className="space-y-4">
-                {recent_orders.map((order) => (
+                {recent_activity.recent_orders.map((order) => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div>
                       <p className="font-medium">{order.order_number}</p>
-                      <p className="text-sm text-gray-500">{order.customer_name}</p>
                       <p className="text-xs text-gray-400">
                         {formatDate(order.created_at)}
                       </p>

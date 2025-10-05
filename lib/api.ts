@@ -82,6 +82,11 @@ export const authApi = {
     );
     return response.data;
   },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response: AxiosResponse<User> = await api.get("/users/me");
+    return response.data;
+  },
 };
 
 // Products API
@@ -176,60 +181,103 @@ export const ordersApi = {
 // Jobs API
 export const jobsApi = {
   getAll: async (params?: {
-    skip?: number;
     limit?: number;
     status?: string;
   }) => {
-    const response = await api.get("/jobs", { params });
+    const response = await api.get("/jobs/", { params });
     return response.data;
   },
 
-  getById: async (id: number) => {
+  getById: async (id: string) => {
     const response = await api.get(`/jobs/${id}`);
     return response.data;
   },
 
-  cancel: async (id: number) => {
-    const response = await api.post(`/jobs/${id}/cancel`);
+  cancel: async (id: string) => {
+    const response = await api.delete(`/jobs/${id}`);
     return response.data;
   },
 
-  retry: async (id: number) => {
+  retry: async (id: string) => {
     const response = await api.post(`/jobs/${id}/retry`);
     return response.data;
   },
 
   // Trigger sync jobs
-  syncProducts: async (marketplace?: string) => {
-    const response = await api.post("/jobs/sync-products", { marketplace });
+  syncProducts: async (marketplace: string) => {
+    const response = await api.post("/jobs/sync-products", null, {
+      params: { marketplace }
+    });
     return response.data;
   },
 
-  syncOrders: async (marketplace?: string) => {
-    const response = await api.post("/jobs/sync-orders", { marketplace });
+  importOrders: async (marketplace: string) => {
+    const response = await api.post("/jobs/import-orders", null, {
+      params: { marketplace }
+    });
+    return response.data;
+  },
+
+  runInventoryAnalysis: async () => {
+    const response = await api.post("/jobs/inventory-analysis");
+    return response.data;
+  },
+
+  runStockOptimization: async () => {
+    const response = await api.post("/jobs/stock-optimization");
+    return response.data;
+  },
+
+  sendWeeklySummary: async () => {
+    const response = await api.post("/jobs/send-weekly-summary");
+    return response.data;
+  },
+
+  getStats: async () => {
+    const response = await api.get("/jobs/stats/summary");
+    return response.data;
+  },
+
+  getQueueStats: async () => {
+    const response = await api.get("/jobs/stats/queues");
     return response.data;
   },
 };
 
 // Privacy/LGPD API
 export const privacyApi = {
-  exportData: async () => {
-    const response = await api.get("/privacy/export");
+  getPolicy: async () => {
+    const response = await api.get("/privacy/policy");
     return response.data;
   },
 
-  deleteData: async () => {
-    const response = await api.delete("/privacy/delete");
+  getConsentStatus: async () => {
+    const response = await api.get("/privacy/consent-status");
+    return response.data;
+  },
+
+  requestDataExport: async () => {
+    const response = await api.post("/privacy/data-request");
+    return response.data;
+  },
+
+  exportData: async () => {
+    const response = await api.get("/privacy/export-data");
+    return response.data;
+  },
+
+  requestAccountDeletion: async () => {
+    const response = await api.post("/privacy/delete-account");
     return response.data;
   },
 
   rectifyData: async (data: any) => {
-    const response = await api.put("/privacy/rectify", data);
+    const response = await api.post("/privacy/rectify-data", data);
     return response.data;
   },
 
-  getAuditLog: async (params?: { skip?: number; limit?: number }) => {
-    const response = await api.get("/privacy/audit-log", { params });
+  getProcessingActivities: async () => {
+    const response = await api.get("/privacy/processing-activities");
     return response.data;
   },
 };
@@ -237,7 +285,147 @@ export const privacyApi = {
 // Dashboard API
 export const dashboardApi = {
   getStats: async () => {
-    const response = await api.get("/dashboard/stats");
+    const response = await api.get("/dashboard/overview");
+    return response.data;
+  },
+  getProductStats: async () => {
+    const response = await api.get("/dashboard/products/stats");
+    return response.data;
+  },
+  getOrderStats: async (days: number = 30) => {
+    const response = await api.get("/dashboard/orders/stats", { params: { days } });
+    return response.data;
+  },
+  getRevenueTimeline: async (days: number = 30) => {
+    const response = await api.get("/dashboard/revenue/timeline", { params: { days } });
+    return response.data;
+  },
+  getAlerts: async () => {
+    const response = await api.get("/dashboard/alerts");
+    return response.data;
+  },
+};
+
+// Marketplace Integrations API
+export const integrationsApi = {
+  getAll: async () => {
+    const response = await api.get("/marketplace-integrations/");
+    return response.data;
+  },
+
+  getById: async (id: number) => {
+    const response = await api.get(`/marketplace-integrations/${id}`);
+    return response.data;
+  },
+
+  create: async (data: any) => {
+    const response = await api.post("/marketplace-integrations/", data);
+    return response.data;
+  },
+
+  update: async (id: number, data: any) => {
+    const response = await api.put(`/marketplace-integrations/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/marketplace-integrations/${id}`);
+    return response.data;
+  },
+
+  testConnection: async (id: number) => {
+    const response = await api.post(`/marketplace-integrations/${id}/test-connection`);
+    return response.data;
+  },
+
+  getStats: async (id: number) => {
+    const response = await api.get(`/marketplace-integrations/${id}/stats`);
+    return response.data;
+  },
+};
+
+// Sync Logs API
+export const syncLogsApi = {
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    marketplace?: string;
+    product_id?: number;
+    status?: string;
+    operation?: string;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    const response = await api.get("/sync-logs/", { params });
+    return response.data;
+  },
+
+  getById: async (id: number) => {
+    const response = await api.get(`/sync-logs/${id}`);
+    return response.data;
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/sync-logs/${id}`);
+    return response.data;
+  },
+
+  getByProduct: async (productId: number) => {
+    const response = await api.get(`/sync-logs/product/${productId}/logs`);
+    return response.data;
+  },
+
+  getStats: async () => {
+    const response = await api.get("/sync-logs/stats/summary");
+    return response.data;
+  },
+};
+
+// Marketplace Links API
+export const marketplaceLinksApi = {
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    marketplace?: string;
+    sync_status?: string;
+    product_id?: number;
+  }) => {
+    const response = await api.get("/marketplace-links/", { params });
+    return response.data;
+  },
+
+  getById: async (id: number) => {
+    const response = await api.get(`/marketplace-links/${id}`);
+    return response.data;
+  },
+
+  create: async (data: any) => {
+    const response = await api.post("/marketplace-links/", data);
+    return response.data;
+  },
+
+  update: async (id: number, data: any) => {
+    const response = await api.put(`/marketplace-links/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/marketplace-links/${id}`);
+    return response.data;
+  },
+
+  triggerSync: async (id: number) => {
+    const response = await api.post(`/marketplace-links/${id}/sync`);
+    return response.data;
+  },
+
+  getByProduct: async (productId: number) => {
+    const response = await api.get(`/marketplace-links/product/${productId}/links`);
+    return response.data;
+  },
+
+  getStats: async () => {
+    const response = await api.get("/marketplace-links/stats/summary");
     return response.data;
   },
 };

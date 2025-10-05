@@ -27,20 +27,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const tokenData: AuthToken = await authApi.login(credentials)
       const { access_token } = tokenData
-      
+
       // Store token
       tokenStorage.set(access_token)
-      
-      // Update state
-      set({ 
-        token: access_token, 
+
+      // Update state with token first
+      set({
+        token: access_token,
         isAuthenticated: true,
-        isLoading: false 
       })
-      
-      // Note: In a real app, you might want to fetch user data here
-      // For now, we'll extract basic info from the token if needed
-      
+
+      // Fetch user data
+      const userData = await authApi.getCurrentUser()
+
+      set({
+        user: userData,
+        isLoading: false
+      })
+
     } catch (error) {
       set({ isLoading: false })
       throw error
@@ -74,16 +78,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     })
   },
   
-  loadUser: () => {
+  loadUser: async () => {
     const token = tokenStorage.get()
     if (token) {
-      set({ 
-        token, 
-        isAuthenticated: true 
+      set({
+        token,
+        isAuthenticated: true,
+        isLoading: true
       })
-      
-      // Here you could decode the JWT token to get user info
-      // or make an API call to get current user data
+
+      try {
+        // Fetch current user data
+        const userData = await authApi.getCurrentUser()
+        set({
+          user: userData,
+          isLoading: false
+        })
+      } catch (error) {
+        // If token is invalid, clear it
+        tokenStorage.remove()
+        set({
+          token: null,
+          isAuthenticated: false,
+          user: null,
+          isLoading: false
+        })
+      }
     }
   },
   

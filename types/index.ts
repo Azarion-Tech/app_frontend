@@ -150,23 +150,84 @@ export interface PaginatedResponse<T> {
 export interface ProductStats {
   total_products: number
   active_products: number
-  total_stock: number
-  average_price: number
-  total_value: number
+  inactive_products: number
+  total_stock_value: number
+  total_stock_units: number
+  low_stock_products: number
+  out_of_stock_products: number
+  categories_count: number
 }
 
 export interface OrderStats {
   total_orders: number
   pending_orders: number
-  completed_orders: number
+  confirmed_orders: number
+  shipped_orders: number
+  delivered_orders: number
+  cancelled_orders: number
   total_revenue: number
+  net_revenue: number
   average_order_value: number
 }
 
+export interface MarketplaceStats {
+  total_integrations: number
+  active_integrations: number
+  connected_integrations: number
+  total_linked_products: number
+  total_marketplace_orders: number
+}
+
+export interface RecentOrder {
+  id: number
+  order_number: string
+  status: string
+  total_amount: number
+  created_at: string
+}
+
+export interface RecentProduct {
+  id: number
+  name: string
+  sku: string
+  price: number
+  stock_quantity: number
+  created_at: string
+}
+
+export interface RecentSync {
+  id: number
+  marketplace: string
+  operation: string
+  status: string
+  created_at: string
+}
+
+export interface RecentAuditLog {
+  id: number
+  action: string
+  resource_type: string
+  timestamp: string
+}
+
+export interface RecentActivity {
+  recent_orders: RecentOrder[]
+  recent_products: RecentProduct[]
+  recent_syncs: RecentSync[]
+  recent_audit_logs: RecentAuditLog[]
+}
+
 export interface DashboardStats {
+  user_info: {
+    id: number
+    name: string
+    email: string
+    member_since: string
+  }
   products: ProductStats
   orders: OrderStats
-  recent_orders: Order[]
+  marketplaces: MarketplaceStats
+  recent_activity: RecentActivity
 }
 
 // Order and Product Status Enums
@@ -188,6 +249,67 @@ export enum SyncStatus {
   PENDING = 'pending',
   SYNCED = 'synced',
   ERROR = 'error',
+}
+
+// Marketplace Integration types
+export interface MarketplaceIntegration {
+  id: number
+  user_id: number
+  marketplace: string
+  marketplace_account_id?: string
+  api_credentials?: any
+  is_active: boolean
+  is_connected: boolean
+  last_sync?: string
+  sync_frequency?: string
+  auto_sync_enabled: boolean
+  created_at: string
+  updated_at?: string
+}
+
+export interface MarketplaceIntegrationCreate {
+  marketplace: string
+  marketplace_account_id?: string
+  api_credentials: any
+  sync_frequency?: string
+  auto_sync_enabled?: boolean
+}
+
+export interface MarketplaceIntegrationUpdate {
+  marketplace_account_id?: string
+  api_credentials?: any
+  is_active?: boolean
+  sync_frequency?: string
+  auto_sync_enabled?: boolean
+}
+
+// Sync Log types
+export interface SyncLog {
+  id: number
+  product_id: number
+  marketplace: string
+  operation: string
+  status: string
+  marketplace_product_id?: string
+  error_message?: string
+  request_data?: any
+  response_data?: any
+  duration_ms?: number
+  created_at: string
+  updated_at?: string
+}
+
+export interface MarketplaceLink {
+  id: number
+  product_id: number
+  marketplace: string
+  marketplace_product_id: string
+  marketplace_product_url?: string
+  sync_status: string
+  last_sync?: string
+  auto_sync_enabled: boolean
+  created_at: string
+  updated_at?: string
 }
 
 // UI State types

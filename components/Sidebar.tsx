@@ -2,14 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Settings,
   LogOut,
   Shield,
-  Activity
+  Activity,
+  Link as LinkIcon,
+  FileText
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { cn } from '@/lib/utils'
@@ -18,6 +20,8 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Produtos', href: '/products', icon: Package },
   { name: 'Pedidos', href: '/orders', icon: ShoppingCart },
+  { name: 'Integrações', href: '/integrations', icon: LinkIcon },
+  { name: 'Logs de Sync', href: '/sync-logs', icon: FileText },
   { name: 'Jobs', href: '/jobs', icon: Activity },
   { name: 'Privacidade', href: '/privacy', icon: Shield },
 ]
