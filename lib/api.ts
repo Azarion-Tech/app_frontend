@@ -438,6 +438,14 @@ export const healthApi = {
   },
 };
 
+// User API
+export const userApi = {
+  getMlAccess: async (email: string) => {
+    const response = await api.get(`/users/ml-access/${email}`);
+    return response.data;
+  },
+};
+
 // Error handling utility
 export const handleApiError = (error: AxiosError): string => {
   if (error.response?.data) {
