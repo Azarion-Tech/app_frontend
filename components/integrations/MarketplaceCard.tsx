@@ -9,10 +9,12 @@ interface MarketplaceCardProps {
     name: string;
     logo: string;
     color: string;
+    marketplace_id: string;
   };
   isConnected: boolean;
   onConnect: () => void;
   onDisconnect: () => void;
+  mlConnection?: { has_access: boolean };
 }
 
 const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
@@ -20,7 +22,43 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
   isConnected,
   onConnect,
   onDisconnect,
+  mlConnection,
 }) => {
+  const isMercadoLivre = marketplace.marketplace_id === 'mercadolivre';
+  const mlConnectUrl = 'https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=8253470738939282&redirect_uri=https://mercado-livre-wvow.onrender.com/callback';
+
+  const handleMlConnect = () => {
+    window.location.href = mlConnectUrl;
+  };
+
+  if (isMercadoLivre) {
+    return (
+      <Card className="hover:shadow-lg transition-shadow duration-300" style={{ borderColor: marketplace.color }}>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Image src={marketplace.logo} alt={`${marketplace.name} logo`} width={40} height={40} />
+            <CardTitle>{marketplace.name}</CardTitle>
+          </div>
+          {mlConnection?.has_access && <CheckCircle className="h-6 w-6 text-green-500" />}
+        </CardHeader>
+        <CardContent className="flex flex-col items-center">
+          {mlConnection?.has_access ? (
+            <div className="flex flex-col items-center w-full">
+              <span className="text-sm font-medium text-green-600 mb-2">Conta conectada</span>
+              <Button variant="destructive" onClick={onDisconnect} className="w-full">
+                Disconnect
+              </Button>
+            </div>
+          ) : (
+            <Button style={{ backgroundColor: marketplace.color }} onClick={handleMlConnect} className="w-full text-white">
+              Connect
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300" style={{ borderColor: marketplace.color }}>
       <CardHeader className="flex flex-row items-center justify-between">
