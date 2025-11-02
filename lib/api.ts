@@ -89,6 +89,14 @@ export const authApi = {
   },
 };
 
+// ML Integration API
+export const mlIntegrationApi = {
+    getAuthUrl: async () => {
+        const response = await api.get("/ml-integration/auth-url");
+        return response.data;
+    },
+};
+
 // Products API
 export const productsApi = {
   getAll: async (params?: {
