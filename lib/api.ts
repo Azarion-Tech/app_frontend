@@ -91,8 +91,10 @@ export const authApi = {
 
 // ML Integration API
 export const mlIntegrationApi = {
-    getAuthUrl: async () => {
-        const response = await api.get("/ml-integration/auth-url");
+    getAuthUrl: async (email: string) => {
+        const response = await api.get("/ml-integration/auth-url", {
+            params: { email },
+        });
         return response.data;
     },
 };

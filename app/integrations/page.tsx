@@ -85,8 +85,12 @@ export default function IntegrationsPage() {
   }
 
   const handleMlConnect = async () => {
+    if (!user?.email) {
+      toast.error('Você precisa estar logado para conectar ao Mercado Livre.');
+      return;
+    }
     try {
-        const data = await mlIntegrationApi.getAuthUrl();
+        const data = await mlIntegrationApi.getAuthUrl(user.email);
         window.location.href = data.auth_url;
     } catch (error: any) {
         toast.error(handleApiError(error));
