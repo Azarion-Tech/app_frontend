@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { integrationsApi, handleApiError, userApi } from '@/lib/api'
+import { integrationsApi, handleApiError, userApi, mlIntegrationApi } from '@/lib/api'
 import { MarketplaceIntegration } from '@/types'
 import { Plus } from 'lucide-react'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -84,11 +84,28 @@ export default function IntegrationsPage() {
     }
   }
 
+  const handleMlConnect = async () => {
+    try {
+        const data = await mlIntegrationApi.getAuthUrl();
+        window.location.href = data.auth_url;
+    } catch (error: any) {
+        toast.error(handleApiError(error));
+    }
+  };
+
   const handleConnect = (marketplaceName: string) => {
+    if(marketplaceName === 'Mercado Livre') {
+        handleMlConnect();
+        return;
+    }
     window.location.href = `/integrations/new?marketplace=${marketplaceName.toLowerCase().replace(' ', '-')}`;
   };
 
   const handleDisconnect = async (marketplaceName: string) => {
+      if(marketplaceName === 'Mercado Livre') {
+        toast.info('A funcionalidade de desconectar o Mercado Livre ainda não foi implementada.');
+        return;
+    }
     const integration_to_delete = integrations.find(
         (integration) => integration.marketplace === marketplaceName.toLowerCase().replace(' ', '-')
     );

@@ -25,11 +25,6 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
   mlConnection,
 }) => {
   const isMercadoLivre = marketplace.marketplace_id === 'mercadolivre';
-  const mlConnectUrl = 'https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=8253470738939282&redirect_uri=https://mercado-livre-wvow.onrender.com/callback';
-
-  const handleMlConnect = () => {
-    window.location.href = mlConnectUrl;
-  };
 
   if (isMercadoLivre) {
     return (
@@ -50,7 +45,7 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
               </Button>
             </div>
           ) : (
-            <Button style={{ backgroundColor: marketplace.color }} onClick={handleMlConnect} className="w-full text-white">
+            <Button style={{ backgroundColor: marketplace.color }} onClick={onConnect} className="w-full text-white">
               Connect
             </Button>
           )}
