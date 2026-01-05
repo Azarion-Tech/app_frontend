@@ -2,10 +2,19 @@ import axios, { AxiosResponse, AxiosError } from "axios";
 import { AuthToken, LoginRequest, RegisterRequest, User } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const ML_API_BASE_URL = process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8001";
 
 // Create axios instance
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// ML API instance (no auth required for OAuth flow)
+export const mlApi = axios.create({
+  baseURL: ML_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -91,10 +100,34 @@ export const authApi = {
 
 // ML Integration API
 export const mlIntegrationApi = {
-    getAuthUrl: async (email: string) => {
-        const response = await api.get("/ml-integration/auth-url", {
-            params: { email },
-        });
+    // Retorna URL de auth do Render diretamente
+    getAuthUrl: async () => {
+        // Retorna a URL da API do Render que vai redirecionar para o ML
+        const mlApiUrl = process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8001";
+        return { auth_url: `${mlApiUrl}/auth/login` };
+    },
+
+    // Salva integração ML no backend main (chamado pelo callback)
+    saveIntegration: async (data: {
+        seller_id: string;
+        access_token: string;
+        refresh_token: string;
+        expires_in: number;
+    }) => {
+        const response = await api.post("/ml-integration/save", data);
+        return response.data;
+    },
+
+    listIntegrations: async () => {
+        const response = await api.get("/ml-integration/integrations");
+        return response.data;
+    },
+    deleteIntegration: async (id: number) => {
+        const response = await api.delete(`/ml-integration/integrations/${id}`);
+        return response.data;
+    },
+    refreshToken: async (id: number) => {
+        const response = await api.post(`/ml-integration/integrations/${id}/refresh`);
         return response.data;
     },
 };
@@ -452,6 +485,117 @@ export const healthApi = {
 export const userApi = {
   getMlAccess: async (email: string) => {
     const response = await api.get(`/users/ml-access/${email}`);
+    return response.data;
+  },
+};
+
+// ML Products Sync API
+export const mlProductsApi = {
+  // Sincronizar produto com Mercado Livre
+  syncProduct: async (productId: number) => {
+    const response = await api.post(`/ml-products/sync/${productId}`);
+    return response.data;
+  },
+
+  // Remover sincronização
+  unsyncProduct: async (productId: number) => {
+    const response = await api.delete(`/ml-products/sync/${productId}`);
+    return response.data;
+  },
+
+  // Obter status de sincronização
+  getSyncStatus: async (productId: number) => {
+    const response = await api.get(`/ml-products/status/${productId}`);
+    return response.data;
+  },
+
+  // Predizer categoria baseada no título do produto
+  predictCategory: async (title: string) => {
+    const response = await api.get(`/ml-products/categories/predict`, {
+      params: { title }
+    });
+    return response.data;
+  },
+
+  // Buscar categorias por query
+  searchCategories: async (query: string) => {
+    const response = await api.get(`/ml-products/categories/search`, {
+      params: { query }
+    });
+    return response.data;
+  },
+
+  // Obter detalhes de uma categoria
+  getCategoryDetails: async (categoryId: string) => {
+    const response = await api.get(`/ml-products/categories/${categoryId}`);
+    return response.data;
+  },
+
+  // Obter atributos obrigatórios de uma categoria
+  getCategoryAttributes: async (categoryId: string) => {
+    const response = await api.get(`/ml-products/categories/${categoryId}/attributes`);
+    return response.data;
+  },
+
+  // Criar produto no Mercado Livre
+  createProduct: async (
+    productId: number,
+    data: {
+      category_id: string;
+      condition: string;
+      listing_type: string;
+      buying_mode: string;
+      attributes: Record<string, string>;
+    }
+  ) => {
+    const response = await api.post(`/ml-products/create/${productId}`, null, {
+      params: data
+    });
+    return response.data;
+  },
+};
+
+// Addresses API
+export const addressesApi = {
+  // Listar todos os endereços do usuário
+  getAll: async () => {
+    const response = await api.get("/addresses");
+    return response.data;
+  },
+
+  // Buscar um endereço específico
+  getById: async (id: number) => {
+    const response = await api.get(`/addresses/${id}`);
+    return response.data;
+  },
+
+  // Criar novo endereço
+  create: async (addressData: any) => {
+    const response = await api.post("/addresses", addressData);
+    return response.data;
+  },
+
+  // Atualizar endereço
+  update: async (id: number, addressData: any) => {
+    const response = await api.put(`/addresses/${id}`, addressData);
+    return response.data;
+  },
+
+  // Deletar endereço
+  delete: async (id: number) => {
+    const response = await api.delete(`/addresses/${id}`);
+    return response.data;
+  },
+
+  // Definir como endereço padrão
+  setDefault: async (id: number) => {
+    const response = await api.post(`/addresses/${id}/set-default`);
+    return response.data;
+  },
+
+  // Buscar CEP
+  searchCep: async (cep: string) => {
+    const response = await api.get(`/addresses/utils/search-cep/${cep}`);
     return response.data;
   },
 };

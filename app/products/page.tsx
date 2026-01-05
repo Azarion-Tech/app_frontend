@@ -11,6 +11,7 @@ import { Plus, Search, Edit, Trash2, Eye, Package } from 'lucide-react'
 import DashboardLayout from '@/components/DashboardLayout'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
+import MarketplaceSyncButtons from '@/components/products/MarketplaceSyncButtons'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -187,6 +188,23 @@ export default function ProductsPage() {
                     </p>
                   )}
 
+                  {/* Marketplace Sync Buttons */}
+                  <div className="border-t pt-3">
+                    <p className="text-xs text-gray-500 mb-2">Sincronizar com:</p>
+                    <MarketplaceSyncButtons
+                      productId={product.id}
+                      productData={{
+                        name: product.name,
+                        sku: product.sku,
+                        price: product.price,
+                        stock_quantity: product.stock_quantity,
+                        description: product.description,
+                        image_url: product.image_url
+                      }}
+                      onSyncComplete={loadProducts}
+                    />
+                  </div>
+
                   <div className="flex justify-end space-x-2 pt-2">
                     <Link href={`/products/${product.id}`}>
                       <Button variant="outline" size="sm">
@@ -198,8 +216,8 @@ export default function ProductsPage() {
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleDelete(product.id)}
                       className="text-red-600 hover:text-red-700"

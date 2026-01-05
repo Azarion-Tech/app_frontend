@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { integrationsApi, handleApiError, userApi, mlIntegrationApi } from '@/lib/api'
+import { integrationsApi, handleApiError, mlIntegrationApi } from '@/lib/api'
 import { MarketplaceIntegration } from '@/types'
 import { Plus } from 'lucide-react'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -14,27 +14,39 @@ import { useAuthStore } from '@/stores/authStore'
 const marketplaces = [
   {
     name: 'Mercado Livre',
-    logo: 'https://www.logosvg.com.br/logos/mercado-livre-88.svg',
+    emoji: '🛒',
     color: '#FFE600',
+    textColor: '#2D3561',
     marketplace_id: 'mercadolivre',
+    available: true,
+    description: 'Conecte sua conta e sincronize produtos'
   },
   {
     name: 'Amazon',
-    logo: 'https://www.logosvg.com.br/logos/amazon-2.svg',
+    emoji: '📦',
     color: '#FF9900',
+    textColor: '#FFFFFF',
     marketplace_id: 'amazon',
+    available: false,
+    description: 'Em breve'
   },
   {
     name: 'Magazine Luiza',
-    logo: 'https://images.seeklogo.com/logo-png/45/1/magalu-logo-png_seeklogo-452237.png',
+    emoji: '🏪',
     color: '#0086FF',
+    textColor: '#FFFFFF',
     marketplace_id: 'magalu',
+    available: false,
+    description: 'Em breve'
   },
   {
     name: 'Shopee',
-    logo: 'https://images.seeklogo.com/logo-png/32/1/shopee-logo-png_seeklogo-326282.png',
+    emoji: '🛍️',
     color: '#EE4D2D',
+    textColor: '#FFFFFF',
     marketplace_id: 'shopee',
+    available: false,
+    description: 'Em breve'
   },
 ];
 
@@ -42,22 +54,20 @@ const marketplaces = [
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<MarketplaceIntegration[]>([])
   const [loading, setLoading] = useState(true)
-  const [mlConnection, setMlConnection] = useState<{ has_access: boolean } | null>(null);
+  const [mlIntegrations, setMlIntegrations] = useState<any[]>([]);
   const { user } = useAuthStore();
 
   useEffect(() => {
     loadIntegrations()
-    if (user?.email) {
-        loadMlConnection(user.email);
-    }
+    loadMlIntegrations()
   }, [user])
 
-  const loadMlConnection = async (email: string) => {
+  const loadMlIntegrations = async () => {
     try {
-        const data = await userApi.getMlAccess(email);
-        setMlConnection(data);
+        const data = await mlIntegrationApi.listIntegrations();
+        setMlIntegrations(data.integrations || []);
     } catch (error: any) {
-        toast.error(handleApiError(error));
+        console.error('Erro ao carregar integracoes ML:', error);
     }
   }
 
@@ -85,13 +95,22 @@ export default function IntegrationsPage() {
   }
 
   const handleMlConnect = async () => {
-    if (!user?.email) {
-      toast.error('Você precisa estar logado para conectar ao Mercado Livre.');
-      return;
+    try {
+        const data = await mlIntegrationApi.getAuthUrl();
+        window.location.href = data.auth_url;
+    } catch (error: any) {
+        toast.error(handleApiError(error));
+    }
+  };
+
+  const handleMlDisconnect = async (integrationId: number) => {
+    if (!confirm('Tem certeza que deseja desconectar esta conta do Mercado Livre?')) {
+        return;
     }
     try {
-        const data = await mlIntegrationApi.getAuthUrl(user.email);
-        window.location.href = data.auth_url;
+        await mlIntegrationApi.deleteIntegration(integrationId);
+        toast.success('Conta ML desconectada com sucesso!');
+        loadMlIntegrations();
     } catch (error: any) {
         toast.error(handleApiError(error));
     }
@@ -105,9 +124,9 @@ export default function IntegrationsPage() {
     window.location.href = `/integrations/new?marketplace=${marketplaceName.toLowerCase().replace(' ', '-')}`;
   };
 
-  const handleDisconnect = async (marketplaceName: string) => {
-      if(marketplaceName === 'Mercado Livre') {
-        toast.info('A funcionalidade de desconectar o Mercado Livre ainda não foi implementada.');
+  const handleDisconnect = async (marketplaceName: string, mlIntegrationId?: number) => {
+      if(marketplaceName === 'Mercado Livre' && mlIntegrationId) {
+        await handleMlDisconnect(mlIntegrationId);
         return;
     }
     const integration_to_delete = integrations.find(
@@ -135,33 +154,54 @@ export default function IntegrationsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Integrações com Marketplaces</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Conecte seus marketplaces para sincronizar produtos e pedidos automaticamente
-            </p>
+      <div className="space-y-8">
+        {/* Header com gradiente */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold mb-3 flex items-center gap-3">
+                🔗 Integrações com Marketplaces
+              </h1>
+              <p className="text-blue-100 text-lg max-w-2xl">
+                Conecte seus marketplaces favoritos e sincronize produtos, estoque e pedidos automaticamente em tempo real
+              </p>
+              <div className="mt-4 flex gap-4">
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <p className="text-xs text-blue-100">Marketplaces Disponíveis</p>
+                  <p className="text-2xl font-bold">1</p>
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <p className="text-xs text-blue-100">Contas Conectadas</p>
+                  <p className="text-2xl font-bold">{mlIntegrations.length}</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <Link href="/integrations/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Integração
-            </Button>
-          </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {marketplaces.map((marketplace) => (
-            <MarketplaceCard
-              key={marketplace.name}
-              marketplace={marketplace}
-              isConnected={integrations.some((integration) => integration.marketplace === marketplace.marketplace_id)}
-              onConnect={() => handleConnect(marketplace.name)}
-              onDisconnect={() => handleDisconnect(marketplace.name)}
-              mlConnection={mlConnection || undefined}
-            />
-          ))}
+          {marketplaces.map((marketplace) => {
+            const isMercadoLivre = marketplace.marketplace_id === 'mercadolivre';
+            const mlConnected = isMercadoLivre && mlIntegrations.length > 0;
+
+            return (
+              <MarketplaceCard
+                key={marketplace.name}
+                marketplace={marketplace}
+                isConnected={
+                  isMercadoLivre
+                    ? mlConnected
+                    : integrations.some((integration) => integration.marketplace === marketplace.marketplace_id)
+                }
+                onConnect={() => handleConnect(marketplace.name)}
+                onDisconnect={() => handleDisconnect(
+                  marketplace.name,
+                  isMercadoLivre ? mlIntegrations[0]?.id : undefined
+                )}
+                mlIntegrations={isMercadoLivre ? mlIntegrations : undefined}
+              />
+            );
+          })}
         </div>
       </div>
     </DashboardLayout>
