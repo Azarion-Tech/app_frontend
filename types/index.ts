@@ -4,9 +4,113 @@ export interface User {
   id: number
   email: string
   name: string
+  role: 'admin' | 'user'
   is_active: boolean
   created_at: string
   updated_at?: string
+}
+
+export interface UserWithSubscription extends User {
+  subscription_status?: string
+  subscription_plan?: string
+  trial_days_remaining?: number
+  subscription_expires_at?: string
+  has_active_subscription: boolean
+}
+
+// Subscription types
+export enum SubscriptionStatus {
+  TRIAL = 'trial',
+  ACTIVE = 'active',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+  PENDING_PAYMENT = 'pending_payment'
+}
+
+export enum SubscriptionPlan {
+  FREE_TRIAL = 'free_trial',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly'
+}
+
+export interface Subscription {
+  id: number
+  user_id: number
+  plan: string
+  status: string
+  trial_starts_at?: string
+  trial_ends_at?: string
+  current_period_start?: string
+  current_period_end?: string
+  card_last_four?: string
+  card_brand?: string
+  days_remaining: number
+  is_active: boolean
+  created_at: string
+  updated_at?: string
+}
+
+export interface PlanPricing {
+  plan: SubscriptionPlan
+  name: string
+  price: number
+  currency: string
+  billing_period: string
+  features: string[]
+  is_popular: boolean
+}
+
+export interface PricingResponse {
+  plans: PlanPricing[]
+  trial_days: number
+}
+
+export interface Payment {
+  id: number
+  user_id: number
+  amount: number
+  currency: string
+  status: string
+  payment_method?: string
+  card_last_four?: string
+  card_brand?: string
+  installments: number
+  infinitepay_transaction_id?: string
+  description?: string
+  paid_at?: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface CardTokenizeRequest {
+  card_number: string
+  card_holder_name: string
+  expiration_month: string
+  expiration_year: string
+  cvv: string
+}
+
+export interface CardTokenizeResponse {
+  token: string
+  card_last_four: string
+  card_brand: string
+  expires_at: string
+}
+
+export interface StartTrialRequest {
+  card_token?: string
+}
+
+export interface StartTrialResponse {
+  message: string
+  subscription: Subscription
+  trial_ends_at: string
+  days_remaining: number
+}
+
+export interface UpgradeSubscriptionRequest {
+  plan: SubscriptionPlan
+  card_token: string
 }
 
 export interface Product {

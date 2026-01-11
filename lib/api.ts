@@ -1,5 +1,35 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { AuthToken, LoginRequest, RegisterRequest, User } from "@/types";
+import {
+  AuthToken,
+  LoginRequest,
+  RegisterRequest,
+  User,
+  Subscription,
+  PricingResponse,
+  Payment,
+  CardTokenizeRequest,
+  CardTokenizeResponse,
+  StartTrialRequest,
+  StartTrialResponse,
+  UpgradeSubscriptionRequest,
+  PaginatedResponse
+} from "@/types";
+import type {
+  IuguCustomer,
+  CreateCustomerRequest,
+  IuguPlan,
+  CreatePlanRequest,
+  IuguSubscription,
+  CreateSubscriptionRequest,
+  ChangePlanRequest,
+  CancelSubscriptionRequest,
+  IuguInvoice,
+  CreateInvoiceRequest,
+  BillingDashboard,
+  PaginatedPlans,
+  PaginatedSubscriptions,
+  PaginatedInvoices
+} from "@/types/billing";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -456,6 +486,197 @@ export const userApi = {
   },
 };
 
+// Subscription API
+export const subscriptionApi = {
+  getPlans: async (): Promise<PricingResponse> => {
+    const response = await api.get("/subscription/plans");
+    return response.data;
+  },
+
+  getStatus: async (): Promise<Subscription> => {
+    const response = await api.get("/subscription/status");
+    return response.data;
+  },
+
+  startTrial: async (data?: StartTrialRequest): Promise<StartTrialResponse> => {
+    const response = await api.post("/subscription/start-trial", data || {});
+    return response.data;
+  },
+
+  upgrade: async (data: UpgradeSubscriptionRequest): Promise<Subscription> => {
+    const response = await api.post("/subscription/upgrade", data);
+    return response.data;
+  },
+
+  cancel: async (reason?: string): Promise<{ message: string; access_until: string }> => {
+    const response = await api.post("/subscription/cancel", { reason });
+    return response.data;
+  },
+
+  tokenizeCard: async (cardData: CardTokenizeRequest): Promise<CardTokenizeResponse> => {
+    const response = await api.post("/subscription/tokenize-card", cardData);
+    return response.data;
+  },
+
+  getPaymentHistory: async (params?: { skip?: number; limit?: number }): Promise<PaginatedResponse<Payment>> => {
+    const response = await api.get("/subscription/payments", { params });
+    return response.data;
+  },
+};
+
+// Billing API (iugu)
+export const billingApi = {
+  // Customer endpoints
+  createCustomer: async (data: CreateCustomerRequest): Promise<IuguCustomer> => {
+    const response = await api.post("/billing/customers", data);
+    return response.data;
+  },
+
+  getMyCustomer: async (): Promise<IuguCustomer> => {
+    const response = await api.get("/billing/customers/me");
+    return response.data;
+  },
+
+  // Plan endpoints
+  getPlans: async (params?: { skip?: number; limit?: number; active_only?: boolean }): Promise<PaginatedPlans> => {
+    const response = await api.get("/billing/plans", { params });
+    return response.data;
+  },
+
+  getPlan: async (identifier: string): Promise<IuguPlan> => {
+    const response = await api.get(`/billing/plans/${identifier}`);
+    return response.data;
+  },
+
+  createPlan: async (data: CreatePlanRequest): Promise<IuguPlan> => {
+    const response = await api.post("/billing/plans", data);
+    return response.data;
+  },
+
+  // Subscription endpoints
+  getMySubscriptions: async (): Promise<IuguSubscription[]> => {
+    const response = await api.get("/billing/subscriptions/me");
+    return response.data;
+  },
+
+  createSubscription: async (data: CreateSubscriptionRequest): Promise<IuguSubscription> => {
+    const response = await api.post("/billing/subscriptions", data);
+    return response.data;
+  },
+
+  suspendSubscription: async (subscriptionId: number): Promise<{ message: string }> => {
+    const response = await api.post(`/billing/subscriptions/${subscriptionId}/suspend`);
+    return response.data;
+  },
+
+  activateSubscription: async (subscriptionId: number): Promise<{ message: string }> => {
+    const response = await api.post(`/billing/subscriptions/${subscriptionId}/activate`);
+    return response.data;
+  },
+
+  changePlan: async (subscriptionId: number, data: ChangePlanRequest): Promise<{ message: string }> => {
+    const response = await api.post(`/billing/subscriptions/${subscriptionId}/change-plan`, data);
+    return response.data;
+  },
+
+  cancelSubscription: async (subscriptionId: number, data?: CancelSubscriptionRequest): Promise<{ message: string }> => {
+    const response = await api.delete(`/billing/subscriptions/${subscriptionId}`, { data });
+    return response.data;
+  },
+
+  // Invoice endpoints
+  getMyInvoices: async (params?: { skip?: number; limit?: number }): Promise<PaginatedInvoices> => {
+    const response = await api.get("/billing/invoices/me", { params });
+    return response.data;
+  },
+
+  getInvoice: async (invoiceId: number): Promise<IuguInvoice> => {
+    const response = await api.get(`/billing/invoices/${invoiceId}`);
+    return response.data;
+  },
+
+  createInvoice: async (data: CreateInvoiceRequest): Promise<IuguInvoice> => {
+    const response = await api.post("/billing/invoices", data);
+    return response.data;
+  },
+
+  // Dashboard (admin only)
+  getDashboard: async (): Promise<BillingDashboard> => {
+    const response = await api.get("/billing/dashboard");
+    return response.data;
+  },
+};
+
+// Admin API
+export const adminApi = {
+  getStats: async () => {
+    const response = await api.get("/admin/stats");
+    return response.data;
+  },
+
+  getUsers: async (params?: {
+    skip?: number;
+    limit?: number;
+    role?: string;
+    subscription_status?: string;
+    search?: string;
+  }) => {
+    const response = await api.get("/admin/users", { params });
+    return response.data;
+  },
+
+  getUserDetails: async (userId: number) => {
+    const response = await api.get(`/admin/users/${userId}`);
+    return response.data;
+  },
+
+  updateUser: async (userId: number, data: { role?: string; is_active?: boolean }) => {
+    const response = await api.put(`/admin/users/${userId}`, data);
+    return response.data;
+  },
+
+  updateUserSubscription: async (
+    userId: number,
+    data: {
+      status?: string;
+      plan?: string;
+      trial_ends_at?: string;
+      current_period_end?: string;
+    }
+  ) => {
+    const response = await api.put(`/admin/users/${userId}/subscription`, data);
+    return response.data;
+  },
+
+  getAllPayments: async (params?: {
+    skip?: number;
+    limit?: number;
+    status?: string;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    const response = await api.get("/admin/payments", { params });
+    return response.data;
+  },
+
+  getAllSubscriptions: async (params?: {
+    skip?: number;
+    limit?: number;
+    status?: string;
+    plan?: string;
+  }) => {
+    const response = await api.get("/admin/subscriptions", { params });
+    return response.data;
+  },
+
+  extendUserTrial: async (userId: number, days: number = 7) => {
+    const response = await api.post(`/admin/users/${userId}/extend-trial`, null, {
+      params: { days },
+    });
+    return response.data;
+  },
+};
+
 // Error handling utility
 export const handleApiError = (error: AxiosError): string => {
   if (error.response?.data) {
@@ -465,5 +686,5 @@ export const handleApiError = (error: AxiosError): string => {
   if (error.message) {
     return error.message;
   }
-  return "Erro de conexão";
+  return "Erro de conexao";
 };

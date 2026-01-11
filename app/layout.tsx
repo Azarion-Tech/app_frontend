@@ -18,6 +18,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        {/* iugu.js for payment tokenization */}
+        <script
+          type="text/javascript"
+          src="https://js.iugu.com/v2"
+          async
+        ></script>
+      </head>
       <body className={inter.className}>
         {children}
         <ToastContainer
