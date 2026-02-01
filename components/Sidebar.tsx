@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -11,28 +11,31 @@ import {
   Shield,
   Activity,
   Link as LinkIcon,
-  FileText
-} from 'lucide-react'
-import { useAuthStore } from '@/stores/authStore'
-import { cn } from '@/lib/utils'
+  FileText,
+  User,
+} from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Produtos', href: '/products', icon: Package },
-  { name: 'Pedidos', href: '/orders', icon: ShoppingCart },
-  { name: 'Integrações', href: '/integrations', icon: LinkIcon },
-  { name: 'Logs de Sync', href: '/sync-logs', icon: FileText },
-  { name: 'Jobs', href: '/jobs', icon: Activity },
-  { name: 'Privacidade', href: '/privacy', icon: Shield },
-]
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Produtos", href: "/products", icon: Package },
+  { name: "Pedidos", href: "/orders", icon: ShoppingCart },
+
+  { name: "Integrações", href: "/integrations", icon: LinkIcon },
+  { name: "Logs de Sync", href: "/sync-logs", icon: FileText },
+  { name: "Jobs", href: "/jobs", icon: Activity },
+  { name: "Privacidade", href: "/privacy", icon: Shield },
+  { name: "Perfil", href: "/profile", icon: User },
+];
 
 export default function Sidebar() {
-  const pathname = usePathname()
-  const { logout } = useAuthStore()
+  const pathname = usePathname();
+  const { logout } = useAuthStore();
 
   const handleLogout = () => {
-    logout()
-  }
+    logout();
+  };
 
   return (
     <div className="flex h-full w-64 flex-col bg-gray-900">
@@ -42,16 +45,16 @@ export default function Sidebar() {
         </div>
         <nav className="mt-8 flex-1 space-y-1 px-2">
           {navigation.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
                   isActive
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
                 )}
               >
                 <item.icon
@@ -60,11 +63,11 @@ export default function Sidebar() {
                 />
                 {item.name}
               </Link>
-            )
+            );
           })}
         </nav>
       </div>
-      
+
       <div className="flex flex-shrink-0 border-t border-gray-700 p-4">
         <button
           onClick={handleLogout}
@@ -75,5 +78,5 @@ export default function Sidebar() {
         </button>
       </div>
     </div>
-  )
+  );
 }

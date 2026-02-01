@@ -2,7 +2,8 @@ import axios, { AxiosResponse, AxiosError } from "axios";
 import { AuthToken, LoginRequest, RegisterRequest, User } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const ML_API_BASE_URL = process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8001";
+const ML_API_BASE_URL =
+  process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8001";
 
 // Create axios instance
 export const api = axios.create({
@@ -10,6 +11,8 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // withCredentials: false by default - JWT auth uses Authorization header
+  // If you need cookies/credentials for specific requests, set per-request
 });
 
 // ML API instance (no auth required for OAuth flow)
@@ -100,36 +103,39 @@ export const authApi = {
 
 // ML Integration API
 export const mlIntegrationApi = {
-    // Retorna URL de auth do Render diretamente
-    getAuthUrl: async () => {
-        // Retorna a URL da API do Render que vai redirecionar para o ML
-        const mlApiUrl = process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8001";
-        return { auth_url: `${mlApiUrl}/auth/login` };
-    },
+  // Retorna URL de auth do Render diretamente
+  getAuthUrl: async () => {
+    // Retorna a URL da API do Render que vai redirecionar para o ML
+    const mlApiUrl =
+      process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8001";
+    return { auth_url: `${mlApiUrl}/auth/login` };
+  },
 
-    // Salva integração ML no backend main (chamado pelo callback)
-    saveIntegration: async (data: {
-        seller_id: string;
-        access_token: string;
-        refresh_token: string;
-        expires_in: number;
-    }) => {
-        const response = await api.post("/ml-integration/save", data);
-        return response.data;
-    },
+  // Salva integração ML no backend main (chamado pelo callback)
+  saveIntegration: async (data: {
+    seller_id: string;
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  }) => {
+    const response = await api.post("/ml-integration/save", data);
+    return response.data;
+  },
 
-    listIntegrations: async () => {
-        const response = await api.get("/ml-integration/integrations");
-        return response.data;
-    },
-    deleteIntegration: async (id: number) => {
-        const response = await api.delete(`/ml-integration/integrations/${id}`);
-        return response.data;
-    },
-    refreshToken: async (id: number) => {
-        const response = await api.post(`/ml-integration/integrations/${id}/refresh`);
-        return response.data;
-    },
+  listIntegrations: async () => {
+    const response = await api.get("/ml-integration/integrations");
+    return response.data;
+  },
+  deleteIntegration: async (id: number) => {
+    const response = await api.delete(`/ml-integration/integrations/${id}`);
+    return response.data;
+  },
+  refreshToken: async (id: number) => {
+    const response = await api.post(
+      `/ml-integration/integrations/${id}/refresh`
+    );
+    return response.data;
+  },
 };
 
 // Products API
@@ -223,10 +229,7 @@ export const ordersApi = {
 
 // Jobs API
 export const jobsApi = {
-  getAll: async (params?: {
-    limit?: number;
-    status?: string;
-  }) => {
+  getAll: async (params?: { limit?: number; status?: string }) => {
     const response = await api.get("/jobs/", { params });
     return response.data;
   },
@@ -249,14 +252,14 @@ export const jobsApi = {
   // Trigger sync jobs
   syncProducts: async (marketplace: string) => {
     const response = await api.post("/jobs/sync-products", null, {
-      params: { marketplace }
+      params: { marketplace },
     });
     return response.data;
   },
 
   importOrders: async (marketplace: string) => {
     const response = await api.post("/jobs/import-orders", null, {
-      params: { marketplace }
+      params: { marketplace },
     });
     return response.data;
   },
@@ -336,11 +339,15 @@ export const dashboardApi = {
     return response.data;
   },
   getOrderStats: async (days: number = 30) => {
-    const response = await api.get("/dashboard/orders/stats", { params: { days } });
+    const response = await api.get("/dashboard/orders/stats", {
+      params: { days },
+    });
     return response.data;
   },
   getRevenueTimeline: async (days: number = 30) => {
-    const response = await api.get("/dashboard/revenue/timeline", { params: { days } });
+    const response = await api.get("/dashboard/revenue/timeline", {
+      params: { days },
+    });
     return response.data;
   },
   getAlerts: async () => {
@@ -377,7 +384,9 @@ export const integrationsApi = {
   },
 
   testConnection: async (id: number) => {
-    const response = await api.post(`/marketplace-integrations/${id}/test-connection`);
+    const response = await api.post(
+      `/marketplace-integrations/${id}/test-connection`
+    );
     return response.data;
   },
 
@@ -463,7 +472,9 @@ export const marketplaceLinksApi = {
   },
 
   getByProduct: async (productId: number) => {
-    const response = await api.get(`/marketplace-links/product/${productId}/links`);
+    const response = await api.get(
+      `/marketplace-links/product/${productId}/links`
+    );
     return response.data;
   },
 
@@ -512,7 +523,7 @@ export const mlProductsApi = {
   // Predizer categoria baseada no título do produto
   predictCategory: async (title: string) => {
     const response = await api.get(`/ml-products/categories/predict`, {
-      params: { title }
+      params: { title },
     });
     return response.data;
   },
@@ -520,7 +531,7 @@ export const mlProductsApi = {
   // Buscar categorias por query
   searchCategories: async (query: string) => {
     const response = await api.get(`/ml-products/categories/search`, {
-      params: { query }
+      params: { query },
     });
     return response.data;
   },
@@ -533,7 +544,9 @@ export const mlProductsApi = {
 
   // Obter atributos obrigatórios de uma categoria
   getCategoryAttributes: async (categoryId: string) => {
-    const response = await api.get(`/ml-products/categories/${categoryId}/attributes`);
+    const response = await api.get(
+      `/ml-products/categories/${categoryId}/attributes`
+    );
     return response.data;
   },
 
@@ -549,7 +562,7 @@ export const mlProductsApi = {
     }
   ) => {
     const response = await api.post(`/ml-products/create/${productId}`, null, {
-      params: data
+      params: data,
     });
     return response.data;
   },

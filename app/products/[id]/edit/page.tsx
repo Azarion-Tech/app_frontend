@@ -22,6 +22,7 @@ const productSchema = z.object({
   stock_quantity: z.string(),
   category: z.string().max(100).optional(),
   image_url: z.string().url('URL inválida').optional().or(z.literal('')),
+  gtin_ean: z.string().max(14).optional().or(z.literal('')),
   is_active: z.boolean(),
 })
 
@@ -64,6 +65,7 @@ export default function EditProductPage() {
         stock_quantity: data.stock_quantity.toString(),
         category: data.category || '',
         image_url: data.image_url || '',
+        gtin_ean: data.gtin_ean || '',
         is_active: data.is_active,
       })
     } catch (error: any) {
@@ -84,6 +86,7 @@ export default function EditProductPage() {
         stock_quantity: parseInt(data.stock_quantity),
         category: data.category || undefined,
         image_url: data.image_url || undefined,
+        gtin_ean: data.gtin_ean || undefined,
         is_active: data.is_active,
       }
 
@@ -216,6 +219,26 @@ export default function EditProductPage() {
                   />
                   {errors.stock_quantity && (
                     <p className="mt-1 text-sm text-red-600">{errors.stock_quantity.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="gtin_ean" className="block text-sm font-medium text-gray-700">
+                    Código de Barras (GTIN/EAN)
+                  </label>
+                  <Input
+                    id="gtin_ean"
+                    type="text"
+                    maxLength={14}
+                    placeholder="Ex: 7891234567890"
+                    {...register('gtin_ean')}
+                    className="mt-1"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Código universal do produto (obrigatório para algumas categorias no ML)
+                  </p>
+                  {errors.gtin_ean && (
+                    <p className="mt-1 text-sm text-red-600">{errors.gtin_ean.message}</p>
                   )}
                 </div>
 

@@ -19,7 +19,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
-  isLoading: false,
+  isLoading: true,  // Inicia como true até verificar se existe token
   isAuthenticated: false,
   
   login: async (credentials: LoginRequest) => {
@@ -104,6 +104,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false
         })
       }
+    } else {
+      // Sem token - finaliza carregamento e marca como não autenticado
+      set({
+        isLoading: false,
+        isAuthenticated: false
+      })
     }
   },
   
